@@ -3,9 +3,18 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+var passportLocal = require("passport-local");
+var passport = require("passport");
+const {
+  serializeUser,
+  deserializeUser,
+  authenticateUser,
+} = require("./controllers/passport/passport-config");
 
 var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
+var loginRouter = require("./routes/loginRouter");
+var signupRouter = require("./routes/signupRouter");
+var uploadRouter = require("./routes/uploadRouter");
 
 var app = express();
 
@@ -29,8 +38,8 @@ app.use("/", indexRouter);
 app.use("/login", loginRouter);
 app.use("/signup", signupRouter);
 app.use("/upload", uploadRouter);
-app.use("/folders", foldersRouter);
-app.use("/search", searchRouter);
+// app.use("/folders", foldersRouter);
+// app.use("/search", searchRouter);
 
 app.get("/logout", (req, res, next) => {
   req.logout((err) => {
