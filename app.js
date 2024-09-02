@@ -1,6 +1,7 @@
 var createError = require("http-errors");
 var express = require("express");
 var path = require("path");
+var session = require("express-session");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 var passportLocal = require("passport-local");
@@ -23,6 +24,10 @@ const LocalStrategy = passportLocal.Strategy;
 passport.serializeUser(serializeUser);
 passport.deserializeUser(deserializeUser);
 passport.use(new LocalStrategy({ usernameField: "email" }, authenticateUser));
+
+app.use(session({ secret: "cats", resave: false, saveUninitialized: false }));
+app.use(passport.session());
+app.use(express.urlencoded({ extended: true }));
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
