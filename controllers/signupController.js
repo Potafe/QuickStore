@@ -11,9 +11,17 @@ exports.getSignUp = (req, res) => {
 
 exports.postSignUp = asyncHandler(async function (req, res, next) {
   const { email, password, name } = req.body;
-  const hashPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ error: "Email is already in use" });
+    }
+
     const user = await prisma.user.create({
       data: {
         name,
