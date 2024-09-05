@@ -12,6 +12,8 @@ const {
   authenticateUser,
 } = require("./controllers/passport/passport-config");
 
+require("dotenv").config();
+
 var indexRouter = require("./routes/index");
 var loginRouter = require("./routes/loginRouter");
 var signupRouter = require("./routes/signupRouter");
@@ -40,6 +42,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+
+console.log(process.env.DATABASE_URL);
 
 app.use("/", indexRouter);
 app.use("/login", loginRouter);
