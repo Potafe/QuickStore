@@ -13,43 +13,64 @@ cloudinary.config({
 });
 
 exports.postUploadFile = asyncHandler(async function (req, res) {
-  if (!req.file) {
-    return res.redirect(`/folders/${req.params.id}`);
-  }
+  try {
+    if (!req.file) {
+      console.log("No file uploaded");
+      return res.redirect(`/folders/${req.params.id}`);
+    }
 
-  const file = req.file;
-  const folderId = req.params.id;
+    const file = req.file;
+    const folderId = req.params.id;
 
-  let result;
-  if (file.mimetype.startsWith("image/")) {
-    result = await cloudinary.uploader.upload(file.path);
-  } else if (file.mimetype.startsWith("video/")) {
-    result = await cloudinary.uploader.upload(file.path, {
-      resource_type: "video",
+    console.log("File details:", {
+      originalname: file.originalname,
+      mimetype: file.mimetype,
+      size: file.size,
     });
-  } else {
-    result = await cloudinary.uploader.upload(file.path, {
-      resource_type: "raw",
-    });
-  }
 
-  await prisma.file.create({
-    data: {
-      name: file.originalname,
-      url: result.secure_url,
-      publicId: result.public_id,
-      type: file.mimetype,
-      folder: {
-        connect: {
-          id: folderId,
+    let result;
+    if (file.mimetype.startsWith("image/")) {
+      console.log("Uploading image to Cloudinary");
+      result = await cloudinary.uploader.upload(file.path);
+    } else if (file.mimetype.startsWith("video/")) {
+      console.log("Uploading video to Cloudinary");
+      result = await cloudinary.uploader.upload(file.path, {
+        resource_type: "video",
+      });
+    } else {
+      console.log("Uploading raw file to Cloudinary");
+      result = await cloudinary.uploader.upload(file.path, {
+        resource_type: "raw",
+      });
+    }
+
+    console.log("Cloudinary upload result:", result);
+
+    // Save file data to Prisma DB
+    const savedFile = await prisma.file.create({
+      data: {
+        name: file.originalname,
+        url: result.secure_url,
+        publicId: result.public_id,
+        type: file.mimetype,
+        folder: {
+          connect: {
+            id: folderId,
+          },
         },
       },
-    },
-  });
+    });
 
-  fs.unlinkSync(file.path);
+    console.log("File saved to database:", savedFile);
 
-  res.redirect(`/folders/${folderId}`);
+    // Safely delete the local file after all the operations
+    fs.unlinkSync(file.path);
+
+    res.redirect(`/folders/${folderId}`);
+  } catch (error) {
+    console.error("Error during file upload or DB operation:", error);
+    res.status(500).send("Internal Server Error: " + error.message);
+  }
 });
 
 exports.getUploadFile = asyncHandler(async function (req, res) {

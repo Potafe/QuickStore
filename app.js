@@ -16,6 +16,8 @@ var indexRouter = require("./routes/index");
 var loginRouter = require("./routes/loginRouter");
 var signupRouter = require("./routes/signupRouter");
 var uploadRouter = require("./routes/uploadRouter");
+var foldersRouter = require("./routes/folderRouter");
+var searchRouter = require("./routes/searchRouter");
 
 var app = express();
 
@@ -43,8 +45,8 @@ app.use("/", indexRouter);
 app.use("/login", loginRouter);
 app.use("/signup", signupRouter);
 app.use("/upload", uploadRouter);
-// app.use("/folders", foldersRouter);
-// app.use("/search", searchRouter);
+app.use("/folders", foldersRouter);
+app.use("/search", searchRouter);
 
 app.get("/logout", (req, res, next) => {
   req.logout((err) => {
